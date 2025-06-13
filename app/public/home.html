@@ -1,0 +1,2678 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saka Hotel</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: { primary: "#3b82f6", secondary: "#10b981" },
+            borderRadius: {
+              none: "0px",
+              sm: "4px",
+              DEFAULT: "8px",
+              md: "12px",
+              lg: "16px",
+              xl: "20px",
+              "2xl": "24px",
+              "3xl": "32px",
+              full: "9999px",
+              button: "8px",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <style>
+      :where([class^="ri-"])::before {
+        content: "\f3c2"; /* Bu satır orjinal dosyanızda vardı, ikonların doğru görünmesi için önemli olabilir ancak remixicon normalde bunu gerektirmez. Eğer ikonlar görünmezse bu satırı kaldırıp test edebilirsiniz. */
+      }
+      body {
+        font-family: "Poppins", sans-serif;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-family: "Playfair Display", serif;
+      }
+      .date-picker-container {
+        position: relative;
+      }
+      .calendar {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 50;
+        width: 100%;
+        max-width: 300px;
+      }
+      .calendar.active {
+        display: block;
+      }
+      .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+      }
+      .calendar-day {
+        text-align: center;
+        padding: 8px;
+        cursor: pointer;
+      }
+      .calendar-day:hover:not(.disabled) {
+        background-color: #e5edff;
+      }
+      .calendar-day.selected {
+        background-color: #3b82f6;
+        color: white;
+      }
+      .calendar-day.range {
+        background-color: #e5edff;
+      }
+      .calendar-day.disabled {
+        color: #d1d5db;
+        cursor: not-allowed;
+      }
+      .weekday {
+        text-align: center;
+        font-weight: 600;
+        padding: 8px;
+      }
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
+      .custom-checkbox {
+        position: relative;
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+      }
+      .custom-checkbox input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 20px;
+        width: 20px;
+        background-color: #fff;
+        border: 2px solid #d1d5db;
+        border-radius: 4px;
+      }
+      .custom-checkbox input:checked ~ .checkmark {
+        background-color: #3b82f6;
+        border-color: #3b82f6;
+      }
+      .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+      }
+      .custom-checkbox input:checked ~ .checkmark:after {
+        display: block;
+      }
+      .custom-checkbox .checkmark:after {
+        left: 6px;
+        top: 2px;
+        width: 5px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+      .custom-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+      }
+      .custom-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .switch-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #e5e7eb;
+        transition: 0.4s;
+        border-radius: 24px;
+      }
+      .switch-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .switch-slider {
+        background-color: #3b82f6;
+      }
+      input:checked + .switch-slider:before {
+        transform: translateX(20px);
+      }
+      .custom-radio {
+        position: relative;
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+      }
+      .custom-radio input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .radio-mark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 20px;
+        width: 20px;
+        background-color: #fff;
+        border: 2px solid #d1d5db;
+        border-radius: 50%;
+      }
+      .custom-radio input:checked ~ .radio-mark {
+        border-color: #3b82f6;
+      }
+      .radio-mark:after {
+        content: "";
+        position: absolute;
+        display: none;
+        top: 4px;
+        left: 4px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #3b82f6;
+      }
+      .custom-radio input:checked ~ .radio-mark:after {
+        display: block;
+      }
+      .booking-progress-bar {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        margin-bottom: 2rem;
+      }
+      .booking-progress-bar::before {
+        content: "";
+        position: absolute;
+        top: 15px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #e5e7eb;
+        z-index: 1;
+      }
+      .progress-step {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .step-number {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: white;
+        border: 2px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+      }
+      .progress-step.active .step-number {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        color: white;
+      }
+      .progress-step.completed .step-number {
+        background: #10b981;
+        border-color: #10b981;
+        color: white;
+      }
+      .custom-range {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: #e5e7eb;
+        outline: none;
+      }
+      .custom-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #3b82f6;
+        cursor: pointer;
+      }
+      .custom-range::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #3b82f6;
+        cursor: pointer;
+        border: none;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+      <div
+        class="container mx-auto px-4 py-4 flex justify-between items-center"
+      >
+        <a href="/"><img src="https://cdn.glitch.global/885f7bb8-e1e4-4732-9b74-ad7cbb783677/logo.png?v=1749664245991" alt="logo" class="h-10" /></a>
+        <nav id="main-nav" class="hidden md:flex md:items-center space-x-8">
+          <a href="/" class="text-gray-800 hover:text-primary font-medium"
+            >Ana Sayfa</a
+          >
+          <a href="rooms" class="text-gray-800 hover:text-primary font-medium"
+            >Odalar</a
+          >
+          <a href="rooms" class="text-gray-800 hover:text-primary font-medium"
+            >Olanaklar
+</a
+          >
+          <a href="rooms" class="text-gray-800 hover:text-primary font-medium"
+            >Galeri</a
+          >
+          <a href="rooms" class="text-gray-800 hover:text-primary font-medium"
+            >İletişim</a
+          >
+          <a
+            href="#reservation"
+            class="bg-primary text-white px-6 py-2 !rounded-button whitespace-nowrap hover:bg-primary/90 transition"
+            >Rezervasyon</a
+          >
+        </nav>
+        <button id="mobile-menu-button" class="md:hidden w-10 h-10 flex items-center justify-center text-gray-800">
+          <i class="ri-menu-line ri-lg"></i>
+        </button>
+      </div>
+    </header>
+
+    <section
+      class="relative h-[600px]"
+      style="
+        background-image: url('https://cdn.glitch.global/885f7bb8-e1e4-4732-9b74-ad7cbb783677/bg.jpg?v=1749800455589');
+        background-size: cover;
+        background-position: center;
+      "
+    >
+      <div class="absolute inset-0 bg-black/30"></div>
+      <div
+        class="container mx-auto px-4 h-full flex items-center relative z-10"
+      >
+        <div class="max-w-2xl text-white">
+          <h1 class="text-5xl md:text-6xl font-bold mb-4">
+            Hayal Gücünün Ötesinde Bir Lüks Deneyimi
+          </h1>
+          <p class="text-xl mb-8">
+            Şehrin kalbinde yer alan prestijli otelimizde, 
+            Eşsiz konforun ve dünya standartlarında hizmetin keyfini çıkarın.
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a
+              href="#reservation"
+              class="bg-primary text-white px-8 py-3 !rounded-button whitespace-nowrap hover:bg-primary/90 transition text-lg font-medium"
+              >Konaklamanızı Rezerve Edin
+</a
+            >
+            <a
+              href="#"
+              class="bg-white text-gray-900 px-8 py-3 !rounded-button whitespace-nowrap hover:bg-gray-100 transition text-lg font-medium"
+              >Odaları Keşfedin
+</a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="quick-access" class="py-8 bg-white">
+      <div class="container mx-auto px-4">
+        <div
+          class="bg-white shadow-lg !rounded-lg -mt-20 relative z-20 p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
+          <div class="flex items-center">
+            <div
+              class="w-12 h-12 flex items-center justify-center bg-primary/10 !rounded-full mr-4"
+            >
+              <i class="ri-map-pin-line ri-lg text-primary"></i>
+            </div>
+            <div>
+              <h3 class="font-medium text-gray-900">Konum</h3>
+              <p class="text-gray-600 text-sm">Akyaka, Muğla</p>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <div
+              class="w-12 h-12 flex items-center justify-center bg-primary/10 !rounded-full mr-4"
+            >
+              <i class="ri-phone-line ri-lg text-primary"></i>
+            </div>
+            <div>
+              <h3 class="font-medium text-gray-900">İletişim</h3>
+              <p class="text-gray-600 text-sm">+90 (555) 555-5555</p>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <div
+              class="w-12 h-12 flex items-center justify-center bg-primary/10 !rounded-full mr-4"
+            >
+              <i class="ri-time-line ri-lg text-primary"></i>
+            </div>
+            <div>
+              <h3 class="font-medium text-gray-900">Giriş/Çıkış</h3>
+              <p class="text-gray-600 text-sm">13:00 / 09:00</p>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <div
+              class="w-12 h-12 flex items-center justify-center bg-primary/10 !rounded-full mr-4"
+            >
+              <i class="ri-customer-service-line ri-lg text-primary"></i>
+            </div>
+            <div>
+              <h3 class="font-medium text-gray-900">24/7 Servis</h3>
+              <p class="text-gray-600 text-sm">Her an sizinle</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="rooms" class="py-16 bg-gray-50">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+          <h2 class="text-4xl font-bold text-gray-900 mb-4">
+            Lüx Konaklama
+          </h2>
+          <p class="text-gray-600 max-w-2xl mx-auto">
+            Konfor, zarafet ve modern olanakların mükemmel uyumunu sunan özenle tasarlanmış oda ve süitlerimizi keşfedin.
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div
+            class="bg-white !rounded-lg overflow-hidden shadow-md hover:shadow-lg transition"
+          >
+            <div class="h-64 overflow-hidden">
+              <img
+                src="https://cdn.glitch.global/885f7bb8-e1e4-4732-9b74-ad7cbb783677/deluxe.jpg?v=1749800581602"
+                alt="Deluxe Room"
+                class="w-full h-full object-cover object-top transition hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900">Deluxe Oda</h3>
+                <p class="text-primary font-bold">
+                  $299<span class="text-sm text-gray-500 font-normal"
+                    >/Gece</span
+                  >
+                </p>
+              </div>
+              <p class="text-gray-600 mb-4">
+                Kral yataklı, şehir manzaralı ve seçici gezginler için özel olarak sunulan üst düzey olanaklara sahip geniş.
+              </p>
+              <div class="flex flex-wrap gap-2 mb-6">
+                <span
+                  class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                  >Kral Yatağı</span
+                >
+                <span
+                  class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                  >42m²</span
+                >
+                <span
+                  class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                  >Şehir Manzarası</span
+                >
+                <span
+                  class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                  >Ücretsiz WiFi</span
+                >
+              </div>
+              <a
+                href="#reservation"
+                class="block text-center bg-primary text-white px-4 py-2 !rounded-button whitespace-nowrap hover:bg-primary/90 transition"
+                >Rezervasyon yap</a
+              >
+            </div>
+          </div>
+          <div
+            class="bg-white !rounded-lg overflow-hidden shadow-md hover:shadow-lg transition"
+          >
+            <div class="h-64 overflow-hidden">
+              <img
+                src="https://cdn.glitch.global/885f7bb8-e1e4-4732-9b74-ad7cbb783677/executive.jpg?v=1749800623440"
+                alt="Executive Suite"
+                class="w-full h-full object-cover object-top transition hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900">Executive Oda</h3>
+                <p class="text-primary font-bold">
+                  $499<span class="text-sm text-gray-500 font-normal"
+                    >/Gece</span
+                  >
+                </p>
+              </div>
+              <p class="text-gray-600 mb-4">
+                Ayrı oturma alanına, panoramik manzaralara ve Yönetici Salonu’na özel erişime sahip şık süit.
+              </p>
+              <div class="flex flex-wrap gap-2 mb-6">
+                <span
+                  class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                  >Kral Yatağı</span
+                >
+                <span
+                  class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                  >68m²</span
+                >
+                <span
+                  class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                  >Panaromik Manzara</span
+                >
+                <span
+                  class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                  >Salon Girişi</span
+                >
+              </div>
+              <a
+                href="#reservation"
+                class="block text-center bg-primary text-white px-4 py-2 !rounded-button whitespace-nowrap hover:bg-primary/90 transition"
+                >Rezervasyon Yap</a
+              >
+            </div>
+          </div>
+          <div
+            class="bg-white !rounded-lg overflow-hidden shadow-md hover:shadow-lg transition"
+          >
+            <div class="h-64 overflow-hidden">
+              <img
+                src="https://cdn.glitch.global/885f7bb8-e1e4-4732-9b74-ad7cbb783677/kral.jpg?v=1749800671774"
+                alt="Presidential Suite"
+                class="w-full h-full object-cover object-top transition hover:scale-105"
+              />
+            </div>
+            <div class="p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900">
+                  Kral Odası
+                </h3>
+                <p class="text-primary font-bold">
+                  $899<span class="text-sm text-gray-500 font-normal"
+                    >/Gece</span
+                  >
+                </p>
+              </div>
+              <p class="text-gray-600 mb-4">
+                Özel terasa, yemek alanına ve kişiye özel uşak hizmetine sahip en lüks konaklamamız.
+              </p>
+              <div class="flex flex-wrap gap-2 mb-6">
+                <span
+                  class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                  >Kral Yatağı</span
+                >
+                <span
+                  class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                  >120m²</span
+                >
+                <span
+                  class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                  >Özel Teras</span
+                >
+                <span
+                  class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                  >Özel Servis</span
+                >
+              </div>
+              <a
+                href="#reservation"
+                class="block text-center bg-primary text-white px-4 py-2 !rounded-button whitespace-nowrap hover:bg-primary/90 transition"
+                >Rezervasyon Yap</a
+              >
+            </div>
+          </div>
+        </div>
+        <div class="text-center mt-10">
+          <a
+            href="#"
+            class="inline-flex items-center text-primary font-medium hover:underline"
+          >
+            Tüm Odaları Gör
+            <i class="ri-arrow-right-line ri-sm ml-1"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="highlights" class="py-16 bg-white">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+          <h2 class="text-4xl font-bold text-gray-900 mb-4">
+            Otelin Öne Çıkanları
+          </h2>
+          <p class="text-gray-600 max-w-2xl mx-auto">
+            Konaklamanızı gerçekten unutulmaz kılan olağanüstü olanakları ve hizmetleri keşfedin.
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div class="text-center">
+            <div
+              class="w-16 h-16 flex items-center justify-center bg-primary/10 !rounded-full mx-auto mb-4"
+            >
+              <i class="ri-restaurant-line ri-xl text-primary"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Gurme Yemek</h3>
+            <p class="text-gray-600">
+              Uluslararası ve yerel mutfaklardan oluşan ödüllü restoranlarımızda gastronomi mükemmeliyetini deneyimleyin.
+            </p>
+          </div>
+          <div class="text-center">
+            <div
+              class="w-16 h-16 flex items-center justify-center bg-primary/10 !rounded-full mx-auto mb-4"
+            >
+              <i class="ri-spa-line ri-xl text-primary"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Lüx Spa</h3>
+            <p class="text-gray-600">
+              Vücut ve zihninizi premium spa uygulamalarımız ve wellness olanaklarımızla yenileyin.
+            </p>
+          </div>
+          <div class="text-center">
+            <div
+              class="w-16 h-16 flex items-center justify-center bg-primary/10 !rounded-full mx-auto mb-4"
+            >
+              <i class="ri-hotel-line ri-xl text-primary"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Etkinlik Alanları</h3>
+            <p class="text-gray-600">
+              Son teknoloji olanaklarla donatılmış şık mekanlarımızda unutulmaz etkinliklere ev sahipliği yapın.
+            </p>
+          </div>
+          <div class="text-center">
+            <div
+              class="w-16 h-16 flex items-center justify-center bg-primary/10 !rounded-full mx-auto mb-4"
+            >
+              <i class="ri-service-line ri-xl text-primary"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Konsiyerj</h3>
+            <p class="text-gray-600">
+              Özel konsiyerj ekibimiz, konaklamanızın beklentilerinizi aşması için 7/24 hizmetinizdedir.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reviews" class="py-16 bg-gray-50">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+          <h2 class="text-4xl font-bold text-gray-900 mb-4">
+            Misafir Deneyimleri
+          </h2>
+          <p class="text-gray-600 max-w-2xl mx-auto">
+            Misafirlerimizin otelimizdeki unutulmaz konaklamaları hakkında neler söylediklerine bakalım.
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="bg-white p-6 !rounded-lg shadow-md">
+            <div class="flex text-primary mb-4">
+              <i class="ri-star-fill"></i>
+              <i class="ri-star-fill"></i>
+              <i class="ri-star-fill"></i>
+              <i class="ri-star-fill"></i>
+              <i class="ri-star-fill"></i>
+            </div>
+            <p class="text-gray-600 mb-6">
+              “Başından sonuna kadar kesinlikle muhteşem bir deneyimdi. Personel, yıl dönümü kutlamamızı özel kılmak için ellerinden gelenin fazlasını yaptı. 
+              Oda kusursuzdu ve nefes kesen manzaralara sahipti.”
+            </p>
+            <div class="flex items-center">
+              <div
+                class="w-12 h-12 !rounded-full bg-gray-200 overflow-hidden mr-4"
+              >
+                <img
+                    src="https://cdn.glitch.global/885f7bb8-e1e4-4732-9b74-ad7cbb783677/merve.jpg?v=1749800742504"
+                     alt="Emily Richardson"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h4 class="font-medium text-gray-900">Merve Yalın</h4>
+                <p class="text-gray-500 text-sm">Urla, İzmir</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white p-6 !rounded-lg shadow-md">
+            <div class="flex text-primary mb-4">
+              <i class="ri-star-fill"></i>
+              <i class="ri-star-fill"></i>
+              <i class="ri-star-fill"></i>
+              <i class="ri-star-fill"></i>
+              <i class="ri-star-fill"></i>
+            </div>
+            <p class="text-gray-600 mb-6">
+              “Yönetici Süiti tüm beklentilerimizi aştı. Geniş, zarif ve her detaya özen gösterilmişti.
+              Yönetici Salonu’na erişim harika bir ayrıcalıktı ve spa uygulamaları mükemmeldi.”
+            </p>
+            <div class="flex items-center">
+              <div
+                class="w-12 h-12 !rounded-full bg-gray-200 overflow-hidden mr-4"
+              >
+                <img
+                     src="https://cdn.glitch.global/885f7bb8-e1e4-4732-9b74-ad7cbb783677/cenk.jpg?v=1749800758655"
+                  alt="James Wilson"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h4 class="font-medium text-gray-900">Cenk Şahin</h4>
+                <p class="text-gray-500 text-sm">Ankara, Türkiye</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white p-6 !rounded-lg shadow-md">
+            <div class="flex text-primary mb-4">
+              <i class="ri-star-fill"></i>
+              <i class="ri-star-fill"></i>
+              <i class="ri-star-fill"></i>
+              <i class="ri-star-fill"></i>
+              <i class="ri-star-fill"></i>
+            </div>
+            <p class="text-gray-600 mb-6">
+              “Sık sık iş seyahatine çıkan biri olarak birçok lüks otelde konakladım, ancak bu otel gerçekten fark yaratıyor. 
+              Hizmet kusursuz, odalar rahat ve restoran olağanüstü lezzetler sunuyor.”
+            </p>
+            <div class="flex items-center">
+              <div
+                class="w-12 h-12 !rounded-full bg-gray-200 overflow-hidden mr-4"
+              >
+                <img
+                     src="https://cdn.glitch.global/885f7bb8-e1e4-4732-9b74-ad7cbb783677/sema.jpg?v=1749800764299"
+                  alt="Sophia Chen"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h4 class="font-medium text-gray-900">Sema Kahraman</h4>
+                <p class="text-gray-500 text-sm">Aydın</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reservation" class="py-16 bg-white">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+          <h2 class="text-4xl font-bold text-gray-900 mb-4">
+            Rezervasyon oluştur
+          </h2>
+          <p class="text-gray-600 max-w-2xl mx-auto">
+            En iyi fiyatlar ve özel ayrıcalıklar için konaklamanızı doğrudan bizimle rezerve edin.
+          </p>
+        </div>
+
+        <div class="max-w-5xl mx-auto">
+          <div class="booking-progress-bar mb-10">
+            <div class="progress-step active" data-step="1">
+              <div class="step-number">1</div>
+              <span class="text-sm font-medium">Gün</span>
+            </div>
+            <div class="progress-step" data-step="2">
+              <div class="step-number">2</div>
+              <span class="text-sm font-medium">Oda</span>
+            </div>
+            <div class="progress-step" data-step="3">
+              <div class="step-number">3</div>
+              <span class="text-sm font-medium">Detaylar</span>
+            </div>
+            <div class="progress-step" data-step="4">
+              <div class="step-number">4</div>
+              <span class="text-sm font-medium">Ödeme</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col lg:flex-row gap-8">
+            <div class="w-full lg:w-2/3 bg-white !rounded-lg shadow-md p-6">
+              <div class="booking-step active" id="step-1">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">
+                  Lütfen Gün Seçin
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div>
+                    <label class="block text-gray-700 font-medium mb-2"
+                      >Giriş</label
+                    >
+                    <div class="date-picker-container">
+                      <div class="relative">
+                        <input
+                          type="text"
+                          id="check-in-date"
+                          class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                          placeholder="Gün Seçiniz"
+                          readonly
+                        />
+                        <div
+                          class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-500"
+                        >
+                          <i class="ri-calendar-line"></i>
+                        </div>
+                      </div>
+                      <div class="calendar" id="check-in-calendar">
+                        <div
+                          class="bg-white !rounded-lg shadow-lg border border-gray-200 p-4"
+                        >
+                          <div class="calendar-header mb-4">
+                            <button
+                              class="prev-month w-8 h-8 flex items-center justify-center hover:bg-gray-100 !rounded-full"
+                            >
+                              <i class="ri-arrow-left-s-line"></i>
+                            </button>
+                            <div class="month-year font-medium"></div>
+                            <button
+                              class="next-month w-8 h-8 flex items-center justify-center hover:bg-gray-100 !rounded-full"
+                            >
+                              <i class="ri-arrow-right-s-line"></i>
+                            </button>
+                          </div>
+                          <div class="calendar-grid">
+                            <div class="weekday">Pt</div>
+                            <div class="weekday">Sl</div>
+                            <div class="weekday">Çr</div>
+                            <div class="weekday">Pş</div>
+                            <div class="weekday">Cm</div>
+                            <div class="weekday">Ct</div>
+                            <div class="weekday">Pz</div>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-gray-700 font-medium mb-2"
+                      >Çıkış</label
+                    >
+                    <div class="date-picker-container">
+                      <div class="relative">
+                        <input
+                          type="text"
+                          id="check-out-date"
+                          class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                          placeholder="Gün Seçiniz"
+                          readonly
+                        />
+                        <div
+                          class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-500"
+                        >
+                          <i class="ri-calendar-line"></i>
+                        </div>
+                      </div>
+                      <div class="calendar" id="check-out-calendar">
+                        <div
+                          class="bg-white !rounded-lg shadow-lg border border-gray-200 p-4"
+                        >
+                          <div class="calendar-header mb-4">
+                            <button
+                              class="prev-month w-8 h-8 flex items-center justify-center hover:bg-gray-100 !rounded-full"
+                            >
+                              <i class="ri-arrow-left-s-line"></i>
+                            </button>
+                            <div class="month-year font-medium"></div>
+                            <button
+                              class="next-month w-8 h-8 flex items-center justify-center hover:bg-gray-100 !rounded-full"
+                            >
+                              <i class="ri-arrow-right-s-line"></i>
+                            </button>
+                          </div>
+                          <div class="calendar-grid">
+                            <div class="weekday">Pt</div>
+                            <div class="weekday">Sl</div>
+                            <div class="weekday">Çr</div>
+                            <div class="weekday">Pş</div>
+                            <div class="weekday">Cm</div>
+                            <div class="weekday">Ct</div>
+                            <div class="weekday">Pz</div>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div>
+                    <label class="block text-gray-700 font-medium mb-2"
+                      >Misafir</label
+                    >
+                    <div class="flex gap-4">
+                      <div class="w-1/2">
+                        <label class="block text-gray-600 text-sm mb-1"
+                          >Yetişkin</label
+                        >
+                        <div class="flex">
+                          <button
+                            class="w-10 h-10 flex items-center justify-center border border-gray-300 !rounded-l text-gray-600 hover:bg-gray-100"
+                            id="decrease-adults"
+                          >
+                            <i class="ri-subtract-line"></i>
+                          </button>
+                          <input
+                            type="number"
+                            id="adults-count"
+                            class="w-full h-10 border-y border-gray-300 text-center focus:outline-none"
+                            value="2"
+                            min="1"
+                            max="10"
+                          />
+                          <button
+                            class="w-10 h-10 flex items-center justify-center border border-gray-300 !rounded-r text-gray-600 hover:bg-gray-100"
+                            id="increase-adults"
+                          >
+                            <i class="ri-add-line"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="w-1/2">
+                        <label class="block text-gray-600 text-sm mb-1"
+                          >Çocuk</label
+                        >
+                        <div class="flex">
+                          <button
+                            class="w-10 h-10 flex items-center justify-center border border-gray-300 !rounded-l text-gray-600 hover:bg-gray-100"
+                            id="decrease-children"
+                          >
+                            <i class="ri-subtract-line"></i>
+                          </button>
+                          <input
+                            type="number"
+                            id="children-count"
+                            class="w-full h-10 border-y border-gray-300 text-center focus:outline-none"
+                            value="0"
+                            min="0"
+                            max="6"
+                          />
+                          <button
+                            class="w-10 h-10 flex items-center justify-center border border-gray-300 !rounded-r text-gray-600 hover:bg-gray-100"
+                            id="increase-children"
+                          >
+                            <i class="ri-add-line"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-gray-700 font-medium mb-2"
+                      >Odalar</label
+                    >
+                    <div class="relative">
+                      <select
+                        id="rooms-count"
+                        class="w-full px-4 py-3 border border-gray-300 !rounded appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary pr-8"
+                      >
+                        <option value="1">1 Oda</option>
+                        <option value="2">2 Oda</option>
+                        <option value="3">3 Oda</option>
+                        <option value="4">4 Oda</option>
+                        <option value="5">5 Oda</option>
+                      </select>
+                      <div
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-500 pointer-events-none"
+                      >
+                        <i class="ri-arrow-down-s-line"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mb-8">
+                  <h4 class="text-lg font-medium text-gray-900 mb-4">
+                    Special Rates
+                  </h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center">
+                      <label class="custom-checkbox">
+                        <input type="checkbox" name="rate-type" value="aaa" />
+                        <span class="checkmark"></span>
+                      </label>
+                      <span>Üye İndirimi</span>
+                    </div>
+                    <div class="flex items-center">
+                      <label class="custom-checkbox">
+                        <input
+                          type="checkbox"
+                          name="rate-type"
+                          value="senior"
+                        />
+                        <span class="checkmark"></span>
+                      </label>
+                      <span>Yaş İndirimi (65+)</span>
+                    </div>
+                    <div class="flex items-center">
+                      <label class="custom-checkbox">
+                        <input
+                          type="checkbox"
+                          name="rate-type"
+                          value="government"
+                        />
+                        <span class="checkmark"></span>
+                      </label>
+                      <span>Hükümet/Asker Fiyatı</span>
+                    </div>
+                    <div class="flex items-center">
+                      <label class="custom-checkbox">
+                        <input
+                          type="checkbox"
+                          name="rate-type"
+                          value="corporate"
+                        />
+                        <span class="checkmark"></span>
+                      </label>
+                      <span>Kurumsal Fiyatı</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-end">
+                  <button
+                    id="next-to-step-2"
+                    class="bg-primary text-white px-6 py-3 !rounded-button whitespace-nowrap hover:bg-primary/90 transition font-medium"
+                  >
+                    Müsaitlik Durumu
+                    <i class="ri-arrow-right-line ml-1"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="booking-step hidden" id="step-2">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">
+                  Oda Seçin
+                </h3>
+
+                <div class="space-y-6 mb-8">
+                  <div
+                    class="border border-gray-200 !rounded-lg overflow-hidden"
+                  >
+                    <div class="grid grid-cols-1 md:grid-cols-3">
+                      <div class="h-48 md:h-full">
+                        <img
+                             src="https://cdn.glitch.global/885f7bb8-e1e4-4732-9b74-ad7cbb783677/deluxe2.jpg?v=1749801017828"
+                          alt="Deluxe Room"
+                          class="w-full h-full object-cover object-top"
+                        />
+                      </div>
+                      <div class="p-4 md:col-span-2">
+                        <div class="flex justify-between items-start mb-2">
+                          <h4 class="text-xl font-bold text-gray-900">
+                            Deluxe Oda
+                          </h4>
+                          <div class="flex items-center">
+                            <span
+                              class="text-sm bg-green-100 text-green-800 px-2 py-1 !rounded"
+                              >Müsait</span
+                            >
+                          </div>
+                        </div>
+                        <div class="mb-4">
+                          <div class="flex flex-wrap gap-2 mb-2">
+                            <span
+                              class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                              >Kral Yatağı</span
+                            >
+                            <span
+                              class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                              >42m²</span
+                            >
+                            <span
+                              class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                              >Şehir Manzarası</span
+                            >
+                            <span
+                              class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                              >En fazla 2 Kişi</span
+                            >
+                          </div>
+                          <p class="text-gray-600 text-sm">
+                            Seçici gezginler için kral yataklı, şehir manzaralı ve üst düzey olanaklara sahip geniş oda.
+                          </p>
+                        </div>
+                        <div class="flex flex-wrap justify-between items-end">
+                          <div>
+                            <p class="text-sm text-gray-600">
+                              28 Ağustos 2025 tarihine kadar iade edilebilir.
+                            </p>
+                            <p class="text-primary font-bold text-xl">
+                              $299<span
+                                class="text-sm text-gray-500 font-normal"
+                                >/gece</span
+                              >
+                            </p>
+                            <p class="text-sm text-gray-600">
+                              $358.80 Vergiler ve ücretler dahil toplam tutar
+                            </p>
+                          </div>
+                          <button
+                            class="select-room bg-primary text-white px-4 py-2 !rounded-button whitespace-nowrap hover:bg-primary/90 transition"
+                            data-room="Deluxe Room"
+                            data-price="299"
+                          >
+                            Seç
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="border border-gray-200 !rounded-lg overflow-hidden"
+                  >
+                    <div class="grid grid-cols-1 md:grid-cols-3">
+                      <div class="h-48 md:h-full">
+                        <img
+                             src="https://cdn.glitch.global/885f7bb8-e1e4-4732-9b74-ad7cbb783677/executive2.jpg?v=1749801070539"
+                          alt="Executive Suite"
+                          class="w-full h-full object-cover object-top"
+                        />
+                      </div>
+                      <div class="p-4 md:col-span-2">
+                        <div class="flex justify-between items-start mb-2">
+                          <h4 class="text-xl font-bold text-gray-900">
+                            Executive Oda
+                          </h4>
+                          <div class="flex items-center">
+                            <span
+                              class="text-sm bg-green-100 text-green-800 px-2 py-1 !rounded"
+                              >Müsait</span
+                            >
+                          </div>
+                        </div>
+                        <div class="mb-4">
+                          <div class="flex flex-wrap gap-2 mb-2">
+                            <span
+                              class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                              >Kral Yatağı</span
+                            >
+                            <span
+                              class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                              >68m²</span
+                            >
+                            <span
+                              class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                              >Panaromic Manzara</span
+                            >
+                            <span
+                              class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                              >En Fazla 2 Kişi</span
+                            >
+                          </div>
+                          <p class="text-gray-600 text-sm">
+                            Ayrı oturma alanına, panoramik manzaralara ve Yönetici Salonu’na özel erişime sahip şık süit.
+                          </p>
+                        </div>
+                        <div class="flex flex-wrap justify-between items-end">
+                          <div>
+                            <p class="text-sm text-gray-600">
+                              28 Ağustos 2025 tarihine kadar iade edilebilir.
+                            </p>
+                            <p class="text-primary font-bold text-xl">
+                              $499<span
+                                class="text-sm text-gray-500 font-normal"
+                                >/Gece</span
+                              >
+                            </p>
+                            <p class="text-sm text-gray-600">
+                              $598.80 Vergiler ve ücretler dahil toplam tutar
+                            </p>
+                          </div>
+                          <button
+                            class="select-room bg-primary text-white px-4 py-2 !rounded-button whitespace-nowrap hover:bg-primary/90 transition"
+                            data-room="Executive Suite"
+                            data-price="499"
+                          >
+                            Seç
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="border border-gray-200 !rounded-lg overflow-hidden"
+                  >
+                    <div class="grid grid-cols-1 md:grid-cols-3">
+                      <div class="h-48 md:h-full">
+                        <img
+                             src="https://cdn.glitch.global/885f7bb8-e1e4-4732-9b74-ad7cbb783677/kral2.jpg?v=1749801104161"
+                          alt="Presidential Suite"
+                          class="w-full h-full object-cover object-top"
+                        />
+                      </div>
+                      <div class="p-4 md:col-span-2">
+                        <div class="flex justify-between items-start mb-2">
+                          <h4 class="text-xl font-bold text-gray-900">
+                            Kral Odası
+                          </h4>
+                          <div class="flex items-center">
+                            <span
+                              class="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 !rounded"
+                              >Limitli</span
+                            >
+                          </div>
+                        </div>
+                        <div class="mb-4">
+                          <div class="flex flex-wrap gap-2 mb-2">
+                            <span
+                              class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                              >Kral Yatağı</span
+                            >
+                            <span
+                              class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                              >120m²</span
+                            >
+                            <span
+                              class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                              >Özel Teras</span
+                            >
+                            <span
+                              class="bg-gray-100 text-gray-800 text-xs px-3 py-1 !rounded-full"
+                              >En Fazla 4 Kişi</span
+                            >
+                          </div>
+                          <p class="text-gray-600 text-sm">
+                            Özel terasa, yemek alanına ve kişiye özel uşak hizmetine sahip en lüks konaklamamız.
+                          </p>
+                        </div>
+                        <div class="flex flex-wrap justify-between items-end">
+                          <div>
+                            <p class="text-sm text-gray-600">
+                              28 Ağustos 2025 tarihine kadar iade edilebilir.
+                            </p>
+                            <p class="text-primary font-bold text-xl">
+                              $899<span
+                                class="text-sm text-gray-500 font-normal"
+                                >/Gece</span
+                              >
+                            </p>
+                            <p class="text-sm text-gray-600">
+                              $1,078.80 Vergiler ve ücretler dahil toplam tutar
+                            </p>
+                          </div>
+                          <button
+                            class="select-room bg-primary text-white px-4 py-2 !rounded-button whitespace-nowrap hover:bg-primary/90 transition"
+                            data-room="Presidential Suite"
+                            data-price="899"
+                          >
+                            Seç
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-between">
+                  <button
+                    id="back-to-step-1"
+                    class="border border-gray-300 text-gray-700 px-6 py-3 !rounded-button whitespace-nowrap hover:bg-gray-50 transition font-medium"
+                  >
+                    <i class="ri-arrow-left-line mr-1"></i>
+                    Geri
+                  </button>
+                </div>
+              </div>
+
+              <div class="booking-step hidden" id="step-3">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">
+                  Müşteri Detayları
+                </h3>
+
+                <div class="space-y-6 mb-8">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-gray-700 font-medium mb-2"
+                        >Ad</label
+                      >
+                      <input
+                        type="text"
+                        class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                        placeholder="Adınız"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 font-medium mb-2"
+                        >Soyad</label
+                      >
+                      <input
+                        type="text"
+                        class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                        placeholder="Soyadınız"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-gray-700 font-medium mb-2"
+                        >E-posta</label
+                      >
+                      <input
+                        type="email"
+                        class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                        placeholder="E-posta"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 font-medium mb-2"
+                        >Telefon Numarası</label
+                      >
+                      <input
+                        type="tel"
+                        class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                        placeholder="Telefon"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-gray-700 font-medium mb-2"
+                      >Özel İstekler</label
+                    >
+                    <textarea
+                      class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                      rows="4"
+                      placeholder="Lütfen özel istekleriniz veya gereksinimleriniz varsa bize bildirin."
+                    ></textarea>
+                  </div>
+
+                  <div>
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">
+                      Ek Hizmetler
+                    </h4>
+                    <div class="space-y-4">
+                      <div
+                        class="flex items-center justify-between p-4 border border-gray-200 !rounded-lg"
+                      >
+                        <div class="flex items-center">
+                          <label class="custom-checkbox">
+                            <input
+                              type="checkbox"
+                              name="additional-service"
+                              value="airport-transfer"
+                            />
+                            <span class="checkmark"></span>
+                          </label>
+                          <div>
+                            <h5 class="font-medium">Havalimanı Transferi</h5>
+                            <p class="text-sm text-gray-600">
+                              Havalimanına/giden özel araç hizmeti
+                            </p>
+                          </div>
+                        </div>
+                        <span class="font-medium">$75</span>
+                      </div>
+
+                      <div
+                        class="flex items-center justify-between p-4 border border-gray-200 !rounded-lg"
+                      >
+                        <div class="flex items-center">
+                          <label class="custom-checkbox">
+                            <input
+                              type="checkbox"
+                              name="additional-service"
+                              value="breakfast"
+                            />
+                            <span class="checkmark"></span>
+                          </label>
+                          <div>
+                            <h5 class="font-medium">Kahvaltı Paketi</h5>
+                            <p class="text-sm text-gray-600">
+                              Tüm misafirler için günlük kahvaltı
+                            </p>
+                          </div>
+                        </div>
+                        <span class="font-medium">$35/Gün</span>
+                      </div>
+
+                      <div
+                        class="flex items-center justify-between p-4 border border-gray-200 !rounded-lg"
+                      >
+                        <div class="flex items-center">
+                          <label class="custom-checkbox">
+                            <input
+                              type="checkbox"
+                              name="additional-service"
+                              value="spa"
+                            />
+                            <span class="checkmark"></span>
+                          </label>
+                          <div>
+                            <h5 class="font-medium">Spa Bakımı</h5>
+                            <p class="text-sm text-gray-600">
+                              60-Dakika Masaj Seansı 
+                            </p>
+                          </div>
+                        </div>
+                        <span class="font-medium">$120</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">
+                      Tercihler
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-gray-700 mb-2"
+                          >Yatak Tercihi</label
+                        >
+                        <div class="space-y-2">
+                          <div class="flex items-center">
+                            <label class="custom-radio">
+                              <input
+                                type="radio"
+                                name="bed-preference"
+                                value="king"
+                                checked
+                              />
+                              <span class="radio-mark"></span>
+                            </label>
+                            <span>Kral Yatağı</span>
+                          </div>
+                          <div class="flex items-center">
+                            <label class="custom-radio">
+                              <input
+                                type="radio"
+                                name="bed-preference"
+                                value="twin"
+                              />
+                              <span class="radio-mark"></span>
+                            </label>
+                            <span>Çift Kişilik Yatak</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="block text-gray-700 mb-2"
+                          >Oda Konumu</label
+                        >
+                        <div class="space-y-2">
+                          <div class="flex items-center">
+                            <label class="custom-radio">
+                              <input
+                                type="radio"
+                                name="room-location"
+                                value="high"
+                                checked
+                              />
+                              <span class="radio-mark"></span>
+                            </label>
+                            <span>Yüksek Kat</span>
+                          </div>
+                          <div class="flex items-center">
+                            <label class="custom-radio">
+                              <input
+                                type="radio"
+                                name="room-location"
+                                value="low"
+                              />
+                              <span class="radio-mark"></span>
+                            </label>
+                            <span>Alçak Kat</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-between">
+                  <button
+                    id="back-to-step-2"
+                    class="border border-gray-300 text-gray-700 px-6 py-3 !rounded-button whitespace-nowrap hover:bg-gray-50 transition font-medium"
+                  >
+                    <i class="ri-arrow-left-line mr-1"></i>
+                    Geri
+                  </button>
+                  <button
+                    id="next-to-step-4"
+                    class="bg-primary text-white px-6 py-3 !rounded-button whitespace-nowrap hover:bg-primary/90 transition font-medium"
+                  >
+                    Ödemeye Devam et
+                    <i class="ri-arrow-right-line ml-1"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="booking-step hidden" id="step-4">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">
+                  Ödeme Bilgileri
+                </h3>
+
+                <div class="space-y-6 mb-8">
+                  <div>
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">
+                      Ödeme Yöntemi
+                    </h4>
+                    <div class="flex flex-wrap gap-4 mb-6">
+                      <div class="flex items-center">
+                        <label class="custom-radio">
+                          <input
+                            type="radio"
+                            name="payment-method"
+                            value="credit-card"
+                            checked
+                          />
+                          <span class="radio-mark"></span>
+                        </label>
+                        <span class="flex items-center">
+                          <span class="mr-2">Kredi Kartı</span>
+                          <span class="flex gap-1">
+                            <i class="ri-visa-fill text-blue-700"></i>
+                            <i class="ri-mastercard-fill text-red-500"></i>
+                            <i
+                              class="ri-american-express-fill text-blue-500"
+                            ></i>
+                          </span>
+                        </span>
+                      </div>
+                      <div class="flex items-center">
+                        <label class="custom-radio">
+                          <input
+                            type="radio"
+                            name="payment-method"
+                            value="paypal"
+                          />
+                          <span class="radio-mark"></span>
+                        </label>
+                        <span class="flex items-center">
+                          <span class="mr-2">PayPal</span>
+                          <i class="ri-paypal-fill text-blue-600"></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div id="credit-card-form">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                          <label class="block text-gray-700 font-medium mb-2"
+                            >Kart Sahibinin Adı</label
+                          >
+                          <input
+                            type="text"
+                            class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                            placeholder="AD"
+                          />
+                        </div>
+                        <div>
+                          <label class="block text-gray-700 font-medium mb-2"
+                            >Kart Numarası</label
+                          >
+                          <div class="relative">
+                            <input
+                              type="text"
+                              class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                              placeholder="XXXX XXXX XXXX XXXX"
+                            />
+                            <div
+                              class="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center"
+                            >
+                              <i class="ri-bank-card-line text-gray-400"></i>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                          <label class="block text-gray-700 font-medium mb-2"
+                            >Bitiş Tarihi Ay</label
+                          >
+                          <div class="relative">
+                            <select
+                              class="w-full px-4 py-3 border border-gray-300 !rounded appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary pr-8"
+                            >
+                              <option value="">Ay</option>
+                              <option value="01">01 - Ocak</option>
+                              <option value="02">02 - Şubat</option>
+                              <option value="03">03 - Mart</option>
+                              <option value="04">04 - Nisan</option>
+                              <option value="05">05 - Mayıs</option>
+                              <option value="06">06 - Haziran</option>
+                              <option value="07">07 - Temmuz</option>
+                              <option value="08">08 - Ağustos</option>
+                              <option value="09">09 - Eylül</option>
+                              <option value="10">10 - Ekim</option>
+                              <option value="11">11 - Kasım</option>
+                              <option value="12">12 - Aralık</option>
+                            </select>
+                            <div
+                              class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-500 pointer-events-none"
+                            >
+                              <i class="ri-arrow-down-s-line"></i>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <label class="block text-gray-700 font-medium mb-2"
+                            >Bitiş Tarihi Yıl</label
+                          >
+                          <div class="relative">
+                            <select
+                              class="w-full px-4 py-3 border border-gray-300 !rounded appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary pr-8"
+                            >
+                              <option value="">Yıl</option>
+                              <option value="2025">2025</option>
+                              <option value="2026">2026</option>
+                              <option value="2027">2027</option>
+                              <option value="2028">2028</option>
+                              <option value="2029">2029</option>
+                              <option value="2030">2030</option>
+                            </select>
+                            <div
+                              class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-500 pointer-events-none"
+                            >
+                              <i class="ri-arrow-down-s-line"></i>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <label class="block text-gray-700 font-medium mb-2"
+                            >CVV</label
+                          >
+                          <div class="relative">
+                            <input
+                              type="text"
+                              class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                              placeholder="XXX"
+                            />
+                            <div
+                              class="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center"
+                            >
+                              <i class="ri-question-line text-gray-400"></i>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">
+                      Fatura Adresi
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div>
+                        <label class="block text-gray-700 font-medium mb-2"
+                          >Şehir/Ülke</label
+                        >
+                        <div class="relative">
+                          <select
+                            class="w-full px-4 py-3 border border-gray-300 !rounded appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary pr-8"
+                          >
+                            <option value="US">Amerika</option>
+                            <option value="CA">Kanada</option>
+                            <option value="UK">İngiltere</option>
+                            <option value="AU">Avusturya</option>
+                            <option value="DE">Almanya</option>
+                            <option value="FR">Fransa</option>
+                            <option value="JP">Japonya</option>
+                          </select>
+                          <div
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-500 pointer-events-none"
+                          >
+                            <i class="ri-arrow-down-s-line"></i>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="block text-gray-700 font-medium mb-2"
+                          >ZIP/Posta Kodu</label
+                        >
+                        <input
+                          type="text"
+                          class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                          placeholder="ZIP kodu giriniz"
+                        />
+                      </div>
+                    </div>
+                    <div class="mb-6">
+                      <label class="block text-gray-700 font-medium mb-2"
+                        >Adres</label
+                      >
+                      <input
+                        type="text"
+                        class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary mb-3"
+                        placeholder="Cadde adresi"
+                      />
+                      <input
+                        type="text"
+                        class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                        placeholder="Apartman , Daire , (v.b)"
+                      />
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <label class="block text-gray-700 font-medium mb-2"
+                          >Şehir</label
+                        >
+                        <input
+                          type="text"
+                          class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                          placeholder="Şehir"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-gray-700 font-medium mb-2"
+                          >Sokak</label
+                        >
+                        <input
+                          type="text"
+                          class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                          placeholder="Sokak"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-gray-700 font-medium mb-2"
+                          >Telefon</label
+                        >
+                        <input
+                          type="tel"
+                          class="w-full px-4 py-3 border border-gray-300 !rounded focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                          placeholder="Telefon numarası"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-start">
+                    <label class="custom-checkbox mt-1">
+                      <input type="checkbox" name="terms" checked />
+                      <span class="checkmark"></span>
+                    </label>
+                    <div>
+                      <p class="text-gray-700">
+                        Kabul Ediyorum
+                        <a href="#" class="text-primary hover:underline"
+                          >Şartlar ve Koşullar</a
+                        >
+                        and
+                        <a href="#" class="text-primary hover:underline"
+                          >Gizlilik Kuralları</a
+                        >.
+                      </p>
+                      <p class="text-sm text-gray-600 mt-1">
+                        Bu rezervasyonu onaylayarak iptal politikamızı ve otel kurallarını kabul etmiş olursunuz.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-between">
+                  <button
+                    id="back-to-step-3"
+                    class="border border-gray-300 text-gray-700 px-6 py-3 !rounded-button whitespace-nowrap hover:bg-gray-50 transition font-medium"
+                  >
+                    <i class="ri-arrow-left-line mr-1"></i>
+                    Geri
+                  </button>
+                  <button
+                    id="complete-booking"
+                    class="bg-primary text-white px-6 py-3 !rounded-button whitespace-nowrap hover:bg-primary/90 transition font-medium"
+                  >
+                    Rezervasyonu Tamamla
+                    <i class="ri-check-line ml-1"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="booking-step hidden" id="booking-confirmation">
+                <div class="text-center py-8">
+                  <div
+                    class="w-20 h-20 bg-green-100 !rounded-full flex items-center justify-center mx-auto mb-6"
+                  >
+                    <i class="ri-check-line ri-2x text-green-600"></i>
+                  </div>
+                  <h3 class="text-2xl font-bold text-gray-900 mb-4">
+                    Rezervasyon Onaylandı!
+                  </h3>
+                  <p class="text-gray-600 mb-6">
+                    Rezervasyonunuz başarıyla tamamlandı. Onay e-postası, e-posta adresinize gönderildi.
+                  </p>
+                  <div class="max-w-md mx-auto bg-gray-50 p-6 !rounded-lg mb-6">
+                    <div class="flex justify-between mb-4">
+                      <span class="text-gray-600">Rezervasyon Kodunuz:</span>
+                      <span class="font-medium">LHH25042501</span>
+                    </div>
+                    <div class="flex justify-between mb-4">
+                      <span class="text-gray-600">Giriş:</span>
+                      <span class="font-medium" id="confirmation-checkin"
+                        >Nisan 29, 2025</span
+                      >
+                    </div>
+                    <div class="flex justify-between mb-4">
+                      <span class="text-gray-600">Çıkış:</span>
+                      <span class="font-medium" id="confirmation-checkout"
+                        >Mayıs 2, 2025</span
+                      >
+                    </div>
+                    <div class="flex justify-between mb-4">
+                      <span class="text-gray-600">Room Type:</span>
+                      <span class="font-medium" id="confirmation-room"
+                        >Deluxe Oda</span
+                      >
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Toplam Tutar:</span>
+                      <span class="font-medium" id="confirmation-total"
+                        >$1,076.40</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap justify-center gap-4">
+                    <a
+                      href="#"
+                      class="bg-primary text-white px-6 py-3 !rounded-button whitespace-nowrap hover:bg-primary/90 transition font-medium"
+                    >
+                      <i class="ri-printer-line mr-1"></i>
+                      Onayı Yazdır
+                    </a>
+                    <a
+                      href="#"
+                      class="border border-gray-300 text-gray-700 px-6 py-3 !rounded-button whitespace-nowrap hover:bg-gray-50 transition font-medium"
+                    >
+                      <i class="ri-home-line mr-1"></i>
+                      Ana Sayfaya Dön
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-full lg:w-1/3">
+              <div class="bg-white !rounded-lg shadow-md p-6 sticky top-24">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">
+                  Rezervasyon Özeti
+                </h3>
+
+                <div class="space-y-4 mb-6">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Giriş</span>
+                    <span class="font-medium" id="summary-checkin"
+                      >Gün Seç</span
+                    >
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Çıkış</span>
+                    <span class="font-medium" id="summary-checkout"
+                      >Gün Seç</span
+                    >
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Gece</span>
+                    <span class="font-medium" id="summary-nights">0</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Misafir</span>
+                    <span class="font-medium" id="summary-guests"
+                      >2 Yetişkin, 0 Çocuk</span
+                    >
+                  </div>
+                  <div id="room-selection-summary" class="hidden">
+                    <div class="border-t border-gray-200 pt-4 mt-4">
+                      <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Oda Seçimi</span>
+                        <span class="font-medium" id="summary-room-type"
+                          >Seçilmedi</span
+                        >
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-gray-600">Gecelik</span>
+                        <span class="font-medium" id="summary-room-rate"
+                          >$0</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  id="price-summary"
+                  class="border-t border-gray-200 pt-4 space-y-2 mb-6"
+                >
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Toplam Oda</span>
+                    <span class="font-medium" id="summary-room-total"
+                      >$0.00</span
+                    >
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Vergiler ve ek ücretler (20%)</span>
+                    <span class="font-medium" id="summary-taxes">$0.00</span>
+                  </div>
+                  <div id="additional-services-summary" class="hidden">
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Ek Hizmetler</span>
+                      <span class="font-medium" id="summary-additional"
+                        >$0.00</span
+                      >
+                    </div>
+                  </div>
+                  <div
+                    class="flex justify-between pt-2 border-t border-gray-200 text-lg"
+                  >
+                    <span class="font-bold text-gray-900">Toplam</span>
+                    <span class="font-bold text-primary" id="summary-total"
+                      >$0.00</span
+                    >
+                  </div>
+                </div>
+
+                <div class="text-center">
+                  <p class="text-sm text-gray-600 mb-4">
+                    Rezervasyonunuzla ilgili yardıma mı ihtiyacınız var?
+                  </p>
+                  <div class="flex items-center justify-center gap-2 mb-2">
+                    <div
+                      class="w-5 h-5 flex items-center justify-center text-primary"
+                    >
+                      <i class="ri-phone-line"></i>
+                    </div>
+                    <span class="font-medium">+90 (555) 555-5555</span>
+                  </div>
+                  <div class="flex items-center justify-center gap-2">
+                    <div
+                      class="w-5 h-5 flex items-center justify-center text-primary"
+                    >
+                      <i class="ri-mail-line"></i>
+                    </div>
+                    <span class="font-medium"
+                      >rezervasyon@saka.com</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="bg-gray-900 text-white pt-16 pb-8">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          <div>
+             
+              
+              <a href="#"><img src="https://cdn.glitch.global/885f7bb8-e1e4-4732-9b74-ad7cbb783677/logo.png?v=1749664245991" alt="logo" class="h-10" /></a>
+              
+            
+            <p class="text-gray-400 mb-6">
+              Şehrin kalbinde yer alan prestijli otelimizde hayalinizin ötesinde bir lüks deneyimi yaşayın.
+            </p>
+            <div class="flex space-x-4">
+              <a
+                href="#"
+                class="w-10 h-10 !rounded-full border border-gray-700 flex items-center justify-center hover:bg-primary hover:border-primary transition"
+              >
+                <i class="ri-facebook-fill"></i>
+              </a>
+              <a
+                href="#"
+                class="w-10 h-10 !rounded-full border border-gray-700 flex items-center justify-center hover:bg-primary hover:border-primary transition"
+              >
+                <i class="ri-twitter-x-fill"></i>
+              </a>
+              <a
+                href="#"
+                class="w-10 h-10 !rounded-full border border-gray-700 flex items-center justify-center hover:bg-primary hover:border-primary transition"
+              >
+                <i class="ri-instagram-fill"></i>
+              </a>
+              <a
+                href="#"
+                class="w-10 h-10 !rounded-full border border-gray-700 flex items-center justify-center hover:bg-primary hover:border-primary transition"
+              >
+                <i class="ri-linkedin-fill"></i>
+              </a>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-6">Hızlı Linkler</h3>
+            <ul class="space-y-3">
+              <li>
+                <a href="#" class="text-gray-400 hover:text-white transition"
+                  >Hakkımızda</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-400 hover:text-white transition"
+                  >Odalar</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-400 hover:text-white transition"
+                  >Yeme-İçme</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-400 hover:text-white transition"
+                  >Spa ve Sağlık</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-400 hover:text-white transition"
+                  >Etkinlikler</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-gray-400 hover:text-white transition"
+                  >Galeri</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-6">İletişim</h3>
+            <ul class="space-y-3">
+              <li class="flex items-start">
+                <div
+                  class="w-5 h-5 flex items-center justify-center text-primary mt-1 mr-3"
+                >
+                  <i class="ri-map-pin-line"></i>
+                </div>
+                <span class="text-gray-400"
+                  >Akyaka, Muğla , Türkiye</span
+                >
+              </li>
+              <li class="flex items-center">
+                <div
+                  class="w-5 h-5 flex items-center justify-center text-primary mr-3"
+                >
+                  <i class="ri-phone-line"></i>
+                </div>
+                <span class="text-gray-400">+90 (555) 555-5555</span>
+              </li>
+              <li class="flex items-center">
+                <div
+                  class="w-5 h-5 flex items-center justify-center text-primary mr-3"
+                >
+                  <i class="ri-mail-line"></i>
+                </div>
+                <span class="text-gray-400">info@sakahotel.com</span>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-6">Bülten</h3>
+            <p class="text-gray-400 mb-4">
+             Özel fırsatlar ve güncellemeler için bültenimize abone olun.
+            </p>
+            <form class="flex mb-4">
+              <input
+                type="email"
+                placeholder="E-posta"
+                class="bg-gray-800 text-white px-4 py-3 !rounded-l border-none focus:outline-none focus:ring-2 focus:ring-primary/50 w-full"
+              />
+              <button
+                type="submit"
+                class="bg-primary text-white px-4 py-3 !rounded-r whitespace-nowrap hover:bg-primary/90 transition"
+              >
+                Abone Ol
+              </button>
+            </form>
+            <div class="flex items-center space-x-3">
+              <span class="text-gray-400">Kabul Ediyoruz:</span>
+              <div class="flex space-x-2">
+                <i class="ri-visa-fill text-2xl"></i>
+                <i class="ri-mastercard-fill text-2xl"></i>
+                <i class="ri-american-express-fill text-2xl"></i>
+                <i class="ri-paypal-fill text-2xl"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-gray-800 pt-8">
+          <div class="flex flex-col md:flex-row justify-between items-center">
+            <p class="text-gray-400 mb-4 md:mb-0">
+              © 2025 Saka Hotel. Tüm Hakları Saklıdır.
+            </p>
+            <div class="flex space-x-6">
+              <a href="#" class="text-gray-400 hover:text-white transition"
+                >Gizlilik Politikası</a
+              >
+              <a href="#" class="text-gray-400 hover:text-white transition"
+                >Hizmet Şartları</a
+              >
+              <a href="#" class="text-gray-400 hover:text-white transition"
+                >Çerez Politikası</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Mobile Menu Toggle Functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mainNav = document.getElementById('main-nav');
+        const menuIcon = mobileMenuButton ? mobileMenuButton.querySelector('i') : null;
+
+        // Store original desktop classes. These are the classes that make the nav work on desktop.
+        // We'll ensure these are present for desktop and removed/managed for mobile open state.
+        const desktopNavClasses = ['md:flex', 'md:items-center', 'md:space-x-8'];
+        // Mobile specific classes to apply when the menu is open
+        const mobileNavOpenClasses = ['flex', 'flex-col', 'absolute', 'top-16', 'left-0', 'right-0', 'w-full', 'bg-white', 'shadow-lg', 'p-4', 'space-y-4', 'z-40']; // Adjusted top value, added w-full and z-index
+
+        if (mobileMenuButton && mainNav && menuIcon) {
+          mobileMenuButton.addEventListener('click', function () {
+            const isMenuOpen = !mainNav.classList.contains('hidden');
+
+            if (isMenuOpen) { // If menu is currently open, close it
+              mainNav.classList.add('hidden');
+              // Remove mobile open classes
+              mobileNavOpenClasses.forEach(cls => mainNav.classList.remove(cls));
+              // Restore desktop classes
+              desktopNavClasses.forEach(cls => mainNav.classList.add(cls));
+
+              menuIcon.classList.remove('ri-close-line');
+              menuIcon.classList.add('ri-menu-line');
+            } else { // If menu is currently closed, open it
+              mainNav.classList.remove('hidden');
+              // Add mobile open classes
+              mobileNavOpenClasses.forEach(cls => mainNav.classList.add(cls));
+              // Temporarily remove desktop specific layout classes that might conflict with absolute positioning
+              desktopNavClasses.forEach(cls => mainNav.classList.remove(cls));
+
+
+              menuIcon.classList.remove('ri-menu-line');
+              menuIcon.classList.add('ri-close-line');
+            }
+          });
+        }
+
+        // Calendar functionality
+        const months = [
+          "Ocak",
+          "Şubat",
+          "Mart",
+          "Nisan",
+          "Mayıs",
+          "Haziran",
+          "Temmuz",
+          "Ağustos",
+          "Eylül",
+          "Ekim",
+          "Kasım",
+          "Aralık",
+        ];
+        const today = new Date();
+        let currentMonth = today.getMonth();
+        let currentYear = today.getFullYear();
+        let selectedCheckInDate = null;
+        let selectedCheckOutDate = null;
+
+        const checkInInput = document.getElementById("check-in-date");
+        const checkOutInput = document.getElementById("check-out-date");
+        const checkInCalendar = document.getElementById("check-in-calendar");
+        const checkOutCalendar = document.getElementById("check-out-calendar");
+
+        // Summary elements
+        const summaryCheckin = document.getElementById("summary-checkin");
+        const summaryCheckout = document.getElementById("summary-checkout");
+        const summaryNights = document.getElementById("summary-nights");
+        const summaryGuests = document.getElementById("summary-guests");
+        const summaryRoomType = document.getElementById("summary-room-type");
+        const summaryRoomRate = document.getElementById("summary-room-rate");
+        const summaryRoomTotal = document.getElementById("summary-room-total");
+        const summaryTaxes = document.getElementById("summary-taxes");
+        const summaryTotal = document.getElementById("summary-total");
+        const roomSelectionSummary = document.getElementById(
+          "room-selection-summary"
+        );
+
+        // Initialize calendars
+        function initCalendar(calendarElement, isCheckOut = false) {
+          const monthYearElement = calendarElement.querySelector(".month-year");
+          const calendarGrid = calendarElement.querySelector(".calendar-grid");
+          const prevMonthBtn = calendarElement.querySelector(".prev-month");
+          const nextMonthBtn = calendarElement.querySelector(".next-month");
+
+          // Set month and year
+          monthYearElement.textContent = `${months[currentMonth]} ${currentYear}`;
+
+          // Clear existing calendar days
+          const existingDays = calendarGrid.querySelectorAll(".calendar-day");
+          existingDays.forEach((day) => day.remove());
+
+          // Get first day of month and total days
+          const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+          const daysInMonth = new Date(
+            currentYear,
+            currentMonth + 1,
+            0
+          ).getDate();
+
+          // Add empty cells for days before first day of month
+          for (let i = 0; i < firstDay; i++) {
+            const emptyDay = document.createElement("div");
+            emptyDay.classList.add("calendar-day", "empty");
+            calendarGrid.appendChild(emptyDay);
+          }
+
+          // Add days of month
+          for (let i = 1; i <= daysInMonth; i++) {
+            const dayElement = document.createElement("div");
+            dayElement.classList.add("calendar-day");
+            dayElement.textContent = i;
+
+            const currentDate = new Date(currentYear, currentMonth, i);
+
+            // Disable past dates
+            if (
+              currentDate <
+              new Date(today.getFullYear(), today.getMonth(), today.getDate())
+            ) {
+              dayElement.classList.add("disabled");
+            } else {
+              // For check-out calendar, disable dates before check-in
+              if (
+                isCheckOut &&
+                selectedCheckInDate &&
+                currentDate <= selectedCheckInDate
+              ) {
+                dayElement.classList.add("disabled");
+              } else {
+                dayElement.addEventListener("click", function () {
+                  if (isCheckOut) {
+                    selectedCheckOutDate = new Date(
+                      currentYear,
+                      currentMonth,
+                      i
+                    );
+                    checkOutInput.value = formatDate(selectedCheckOutDate);
+                    checkOutCalendar.classList.remove("active");
+                    updateDateRange();
+                    updateBookingSummary();
+                  } else {
+                    selectedCheckInDate = new Date(
+                      currentYear,
+                      currentMonth,
+                      i
+                    );
+                    checkInInput.value = formatDate(selectedCheckInDate);
+                    checkInCalendar.classList.remove("active");
+
+                    // Reset check-out date if it's before new check-in date
+                    if (
+                      selectedCheckOutDate &&
+                      selectedCheckOutDate <= selectedCheckInDate
+                    ) {
+                      selectedCheckOutDate = null;
+                      checkOutInput.value = "";
+                    }
+
+                    updateDateRange();
+                    updateBookingSummary();
+                  }
+                });
+              }
+            }
+
+            // Mark selected dates
+            if (
+              !isCheckOut &&
+              selectedCheckInDate &&
+              i === selectedCheckInDate.getDate() &&
+              currentMonth === selectedCheckInDate.getMonth() &&
+              currentYear === selectedCheckInDate.getFullYear()
+            ) {
+              dayElement.classList.add("selected");
+            }
+
+            if (
+              isCheckOut &&
+              selectedCheckOutDate &&
+              i === selectedCheckOutDate.getDate() &&
+              currentMonth === selectedCheckOutDate.getMonth() &&
+              currentYear === selectedCheckOutDate.getFullYear()
+            ) {
+              dayElement.classList.add("selected");
+            }
+
+            // Mark date range
+            if (selectedCheckInDate && selectedCheckOutDate) {
+              const dayDate = new Date(currentYear, currentMonth, i);
+              if (
+                dayDate > selectedCheckInDate &&
+                dayDate < selectedCheckOutDate
+              ) {
+                dayElement.classList.add("range");
+              }
+            }
+
+            calendarGrid.appendChild(dayElement);
+          }
+
+          // Event listeners for month navigation
+          prevMonthBtn.addEventListener("click", function () {
+            currentMonth--;
+            if (currentMonth < 0) {
+              currentMonth = 11;
+              currentYear--;
+            }
+            initCalendar(calendarElement, isCheckOut);
+          });
+
+          nextMonthBtn.addEventListener("click", function () {
+            currentMonth++;
+            if (currentMonth > 11) {
+              currentMonth = 0;
+              currentYear++;
+            }
+            initCalendar(calendarElement, isCheckOut);
+          });
+        }
+
+        // Format date as MM/DD/YYYY
+        function formatDate(date) {
+          if (!date) return "";
+          const month = months[date.getMonth()];
+          const day = date.getDate();
+          const year = date.getFullYear();
+          return `${month} ${day}, ${year}`;
+        }
+
+        // Update date range display
+        function updateDateRange() {
+          if (selectedCheckInDate && selectedCheckOutDate) {
+            const days = Math.round(
+              (selectedCheckOutDate - selectedCheckInDate) /
+                (1000 * 60 * 60 * 24)
+            );
+            // You can update UI to show the selected date range
+          }
+        }
+
+        // Toggle calendar visibility
+        if (checkInInput && checkInCalendar) {
+            checkInInput.addEventListener("click", function () {
+                checkInCalendar.classList.toggle("active");
+                if(checkOutCalendar) checkOutCalendar.classList.remove("active");
+                initCalendar(checkInCalendar);
+            });
+        }
+
+        if (checkOutInput && checkOutCalendar) {
+            checkOutInput.addEventListener("click", function () {
+                checkOutCalendar.classList.toggle("active");
+                if(checkInCalendar) checkInCalendar.classList.remove("active");
+                initCalendar(checkOutCalendar, true);
+            });
+        }
+
+
+        // Close calendars when clicking outside
+        document.addEventListener("click", function (e) {
+          if (
+            checkInCalendar && checkInInput &&
+            !checkInInput.contains(e.target) &&
+            !checkInCalendar.contains(e.target)
+          ) {
+            checkInCalendar.classList.remove("active");
+          }
+          if (
+            checkOutCalendar && checkOutInput &&
+            !checkOutInput.contains(e.target) &&
+            !checkOutCalendar.contains(e.target)
+          ) {
+            checkOutCalendar.classList.remove("active");
+          }
+        });
+
+        // Guest counter functionality
+        const adultsCount = document.getElementById("adults-count");
+        const childrenCount = document.getElementById("children-count");
+        const increaseAdults = document.getElementById("increase-adults");
+        const decreaseAdults = document.getElementById("decrease-adults");
+        const increaseChildren = document.getElementById("increase-children");
+        const decreaseChildren = document.getElementById("decrease-children");
+
+        if(increaseAdults && adultsCount){
+            increaseAdults.addEventListener("click", function () {
+            if (parseInt(adultsCount.value) < 10) {
+                adultsCount.value = parseInt(adultsCount.value) + 1;
+                updateBookingSummary();
+            }
+            });
+        }
+        if(decreaseAdults && adultsCount){
+            decreaseAdults.addEventListener("click", function () {
+            if (parseInt(adultsCount.value) > 1) {
+                adultsCount.value = parseInt(adultsCount.value) - 1;
+                updateBookingSummary();
+            }
+            });
+        }
+        if(increaseChildren && childrenCount){
+            increaseChildren.addEventListener("click", function () {
+            if (parseInt(childrenCount.value) < 6) {
+                childrenCount.value = parseInt(childrenCount.value) + 1;
+                updateBookingSummary();
+            }
+            });
+        }
+        if(decreaseChildren && childrenCount){
+            decreaseChildren.addEventListener("click", function () {
+            if (parseInt(childrenCount.value) > 0) {
+                childrenCount.value = parseInt(childrenCount.value) - 1;
+                updateBookingSummary();
+            }
+            });
+        }
+
+
+        // Update booking summary
+        function updateBookingSummary() {
+          // Update guests
+          if(summaryGuests && adultsCount && childrenCount) {
+            summaryGuests.textContent = `${adultsCount.value} Yetişkin, ${childrenCount.value} Çocuk`;
+          }
+
+
+          // Update dates
+          if (selectedCheckInDate && summaryCheckin) {
+            summaryCheckin.textContent = formatDate(selectedCheckInDate);
+          } else if (summaryCheckin) {
+            summaryCheckin.textContent = "Gün Seçin";
+          }
+
+          if (selectedCheckOutDate && summaryCheckout) {
+            summaryCheckout.textContent = formatDate(selectedCheckOutDate);
+          } else if (summaryCheckout) {
+            summaryCheckout.textContent = "Gün Seçin";
+          }
+
+
+          // Update nights
+          if (selectedCheckInDate && selectedCheckOutDate && summaryNights) {
+            const nights = Math.max(0, Math.round( // Ensure nights is not negative
+              (selectedCheckOutDate - selectedCheckInDate) /
+                (1000 * 60 * 60 * 24)
+            ));
+            summaryNights.textContent = nights;
+
+            // If room is selected, update totals
+            if (summaryRoomType && summaryRoomType.textContent !== "Not selected" && summaryRoomRate && summaryRoomTotal && summaryTaxes && summaryTotal) {
+              const roomRate = parseFloat(
+                summaryRoomRate.textContent.replace("$", "")
+              );
+              const roomTotal = roomRate * nights;
+              const taxes = roomTotal * 0.2; // 20% tax
+
+              summaryRoomTotal.textContent = `$${roomTotal.toFixed(2)}`;
+              summaryTaxes.textContent = `$${taxes.toFixed(2)}`;
+              summaryTotal.textContent = `$${(roomTotal + taxes).toFixed(2)}`;
+            }
+          } else if (summaryNights) {
+             summaryNights.textContent = "0";
+          }
+        }
+
+        // Multi-step form navigation
+        const steps = document.querySelectorAll(".booking-step");
+        const progressSteps = document.querySelectorAll(".progress-step");
+
+        function showStep(stepNumber) {
+          steps.forEach((step) => step.classList.add("hidden"));
+          const currentStepElement = document.getElementById(`step-${stepNumber}`);
+          if (currentStepElement) {
+            currentStepElement.classList.remove("hidden");
+          }
+
+
+          // Update progress indicator
+          progressSteps.forEach((step, index) => {
+            if (index + 1 < stepNumber) {
+              step.classList.add("completed");
+              step.classList.remove("active");
+            } else if (index + 1 === stepNumber) {
+              step.classList.add("active");
+              step.classList.remove("completed");
+            } else {
+              step.classList.remove("active", "completed");
+            }
+          });
+        }
+
+        // Next/back buttons
+        const nextToStep2Button = document.getElementById("next-to-step-2");
+        if (nextToStep2Button) {
+            nextToStep2Button.addEventListener("click", function () {
+                if (!selectedCheckInDate || !selectedCheckOutDate) {
+                alert("Please select both check-in and check-out dates.");
+                return;
+                }
+                if(selectedCheckOutDate <= selectedCheckInDate) {
+                alert("Check-out date must be after check-in date.");
+                return;
+                }
+                showStep(2);
+            });
+        }
+
+
+        const backToStep1Button = document.getElementById("back-to-step-1");
+        if (backToStep1Button) {
+            backToStep1Button.addEventListener("click", function () {
+                showStep(1);
+            });
+        }
+
+        const backToStep2Button = document.getElementById("back-to-step-2");
+         if (backToStep2Button) {
+            backToStep2Button.addEventListener("click", function () {
+                showStep(2);
+            });
+        }
+
+
+        const nextToStep4Button = document.getElementById("next-to-step-4");
+        if (nextToStep4Button) {
+            nextToStep4Button.addEventListener("click", function () {
+                // Basic validation for step 3 can be added here if needed
+                showStep(4);
+            });
+        }
+
+        const backToStep3Button = document.getElementById("back-to-step-3");
+        if (backToStep3Button) {
+            backToStep3Button.addEventListener("click", function () {
+                showStep(3);
+            });
+        }
+
+        const completeBookingButton = document.getElementById("complete-booking");
+        if (completeBookingButton) {
+            completeBookingButton.addEventListener("click", function () {
+                // Basic validation for step 4 can be added here if needed
+                steps.forEach((step) => step.classList.add("hidden"));
+                const confirmationStep = document.getElementById("booking-confirmation");
+                if(confirmationStep) confirmationStep.classList.remove("hidden");
+
+
+                // Update confirmation details
+                const confCheckin = document.getElementById("confirmation-checkin");
+                const confCheckout = document.getElementById("confirmation-checkout");
+                const confRoom = document.getElementById("confirmation-room");
+                const confTotal = document.getElementById("confirmation-total");
+
+                if(confCheckin && summaryCheckin) confCheckin.textContent = summaryCheckin.textContent;
+                if(confCheckout && summaryCheckout) confCheckout.textContent = summaryCheckout.textContent;
+                if(confRoom && summaryRoomType) confRoom.textContent = summaryRoomType.textContent;
+                if(confTotal && summaryTotal) confTotal.textContent = summaryTotal.textContent;
+
+
+                progressSteps.forEach((step) => {
+                step.classList.add("completed");
+                step.classList.remove("active");
+                });
+            });
+        }
+
+
+        // Room selection
+        const selectRoomButtons = document.querySelectorAll(".select-room");
+
+        selectRoomButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const roomType = this.getAttribute("data-room");
+            const roomPrice = this.getAttribute("data-price");
+
+            // Update summary
+            if(summaryRoomType) summaryRoomType.textContent = roomType;
+            if(summaryRoomRate) summaryRoomRate.textContent = `$${roomPrice}`;
+            if(roomSelectionSummary) roomSelectionSummary.classList.remove("hidden");
+
+
+            // Calculate totals
+            if (selectedCheckInDate && selectedCheckOutDate && summaryNights && summaryRoomTotal && summaryTaxes && summaryTotal) {
+              const nights = Math.max(0, Math.round(
+                (selectedCheckOutDate - selectedCheckInDate) /
+                  (1000 * 60 * 60 * 24)
+              ));
+              const roomTotal = parseFloat(roomPrice) * nights;
+              const taxes = roomTotal * 0.2; // 20% tax
+
+              summaryRoomTotal.textContent = `$${roomTotal.toFixed(2)}`;
+              summaryTaxes.textContent = `$${taxes.toFixed(2)}`;
+              summaryTotal.textContent = `$${(roomTotal + taxes).toFixed(2)}`;
+            }
+
+            // Go to next step
+            showStep(3);
+          });
+        });
+
+        // Additional services
+        const additionalServices = document.querySelectorAll(
+          'input[name="additional-service"]'
+        );
+        const additionalServicesSummary = document.getElementById(
+          "additional-services-summary"
+        );
+        const summaryAdditional = document.getElementById("summary-additional");
+
+        additionalServices.forEach((service) => {
+          service.addEventListener("change", function () {
+            let additionalTotal = 0;
+            let hasCheckedServices = false;
+
+            additionalServices.forEach((s) => {
+              if (s.checked) {
+                hasCheckedServices = true;
+                if (s.value === "airport-transfer") additionalTotal += 75;
+                if (s.value === "breakfast" && selectedCheckInDate && selectedCheckOutDate && adultsCount) {
+                  const nights = Math.max(0, Math.round(
+                    (selectedCheckOutDate - selectedCheckInDate) /
+                      (1000 * 60 * 60 * 24)
+                  ));
+                  additionalTotal += 35 * nights * parseInt(adultsCount.value);
+                }
+                if (s.value === "spa") additionalTotal += 120;
+              }
+            });
+
+            if (hasCheckedServices && additionalServicesSummary && summaryAdditional && summaryRoomTotal && summaryTaxes && summaryTotal) {
+              additionalServicesSummary.classList.remove("hidden");
+              summaryAdditional.textContent = `$${additionalTotal.toFixed(2)}`;
+
+              // Update total
+              const roomTotal = parseFloat(
+                summaryRoomTotal.textContent.replace("$", "")
+              );
+              const taxes = parseFloat(
+                summaryTaxes.textContent.replace("$", "")
+              );
+              summaryTotal.textContent = `$${(
+                roomTotal +
+                taxes +
+                additionalTotal
+              ).toFixed(2)}`;
+            } else if (additionalServicesSummary && summaryRoomTotal && summaryTaxes && summaryTotal) {
+              additionalServicesSummary.classList.add("hidden");
+              if(summaryAdditional) summaryAdditional.textContent = "$0.00";
+
+
+              // Update total without additional services
+              const roomTotal = parseFloat(
+                summaryRoomTotal.textContent.replace("$", "")
+              );
+              const taxes = parseFloat(
+                summaryTaxes.textContent.replace("$", "")
+              );
+              summaryTotal.textContent = `$${(roomTotal + taxes).toFixed(2)}`;
+            }
+          });
+        });
+
+        // Initialize first step and booking summary
+        updateBookingSummary(); // Initial call to set guest counts etc.
+        showStep(1);
+      });
+    </script>
+  </body>
+</html>
